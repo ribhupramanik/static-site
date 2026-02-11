@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Important Question 👀</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  </head>
+
+  <body
+    class="h-screen flex items-center justify-center bg-gradient-to-br from-pink-400 via-red-400 to-pink-600 overflow-hidden"
+  >
+    <div class="text-center text-white max-w-xl px-4">
+      <h1 id="titleName" class="text-3xl md:text-4xl font-bold mb-4"></h1>
+
+      <h1
+        id="question"
+        class="text-4xl md:text-5xl font-bold mb-8 transition-all duration-300"
+      >
+        Will you be my Valentine? 💖
+      </h1>
+
+      <div class="flex justify-center gap-6 relative h-32 items-center">
+        <button
+          id="yesBtn"
+          class="px-8 py-3 bg-white text-pink-600 rounded-full text-xl font-bold shadow-lg"
+        >
+          Yes 😍
+        </button>
+
+        <button
+          id="noBtn"
+          class="px-8 py-3 bg-black text-white rounded-full text-xl font-bold shadow-lg absolute"
+        >
+          No 🙄
+        </button>
+      </div>
+    </div>
+
+    <audio id="sadAudio">
+      <source
+        src="https://www.myinstants.com/media/sounds/sad-violin.mp3"
+        type="audio/mpeg"
+      />
+    </audio>
+
+    <script>
+      const herName = "Anu";
+      document.getElementById("titleName").innerText =
+        herName + ", I have something important to ask you...";
+
+      const noBtn = document.getElementById("noBtn");
+      const yesBtn = document.getElementById("yesBtn");
+      const question = document.getElementById("question");
+      const sadAudio = document.getElementById("sadAudio");
+
+      let noClickCount = 0;
+      let activatedAbsolute = false;
+
+      const messages = [
+        "Are you sure? 🥺",
+        "Think again… 😭",
+        "Really really sure??",
+        "You're breaking my heart 💔",
+        "I'll stop gaming 😔",
+        "I'll stop eating Fish 🍥",
+        "This is getting painful 😩",
+      ];
+
+      // Ensure both buttons visible on load
+      gsap.from([yesBtn, noBtn], {
+        opacity: 0,
+        y: 30,
+        duration: 1,
+        stagger: 0.2,
+        ease: "power3.out",
+      });
+
+      let evadeActive = false;
+      let evadeTimeout;
+
+      // NO CLICK
+      noBtn.addEventListener("click", () => {
+        noClickCount++;
+
+        if (!activatedAbsolute) {
+          noBtn.style.position = "absolute";
+          activatedAbsolute = true;
+        }
+
+        if (noClickCount <= messages.length) {
+          question.innerText = messages[noClickCount - 1];
+        }
+
+        if (noClickCount >= 3) {
+          sadAudio.play();
+        }
+
+        // YES grows
+        gsap.to(yesBtn, {
+          scale: 1 + noClickCount * 0.25,
+          duration: 0.4,
+          ease: "back.out(1.7)",
+        });
+
+        // NO shrinks + jumps
+        jumpNoButton();
+
+        // Activate evade mode for 2 seconds
+        activateEvadeMode();
+
+        if (noClickCount >= 7) {
+          gsap.to(noBtn, {
+            opacity: 0,
+            duration: 0.5,
+            onComplete: () => (noBtn.style.display = "none"),
+          });
+          question.innerText = "Okay fine. Destiny has decided. Click Yes. 😌";
+        }
+      });
+
+      // Function to randomly jump NO button
+      function jumpNoButton() {
+        gsap.to(noBtn, {
+          scale: 1 - noClickCount * 0.1,
+          x: (Math.random() - 0.5) * 400,
+          y: (Math.random() - 0.5) * 300,
+          duration: 0.4,
+          ease: "power2.out",
+        });
+      }
+
+      // EVASION MODE
+      function activateEvadeMode() {
+        evadeActive = true;
+
+        document.addEventListener("mousemove", evadeMouse);
+        document.addEventListener("touchmove", evadeTouch);
+
+        clearTimeout(evadeTimeout);
+        evadeTimeout = setTimeout(() => {
+          evadeActive = false;
+          document.removeEventListener("mousemove", evadeMouse);
+          document.removeEventListener("touchmove", evadeTouch);
+        }, 2000);
+      }
+
+      // Desktop mouse evade
+      function evadeMouse(e) {
+        if (!evadeActive) return;
+
+        const rect = noBtn.getBoundingClientRect();
+        const distance = Math.hypot(
+          e.clientX - rect.left,
+          e.clientY - rect.top,
+        );
+
+        if (distance < 420) {
+          jumpNoButton();
+        }
+      }
+
+      // Mobile touch evade
+      function evadeTouch(e) {
+        if (!evadeActive) return;
+
+        const touch = e.touches[0];
+        const rect = noBtn.getBoundingClientRect();
+
+        const distance = Math.hypot(
+          touch.clientX - rect.left,
+          touch.clientY - rect.top,
+        );
+
+        if (distance < 120) {
+          jumpNoButton();
+        }
+      }
+
+      // YES CLICK — SMOOTH CINEMATIC TRANSITION
+      yesBtn.addEventListener("click", () => {
+        // Fade out current content
+        gsap.to("body > div", {
+          opacity: 0,
+          y: -50,
+          duration: 0.8,
+          ease: "power2.in",
+          onComplete: showLoading,
+        });
+      });
+
+      function showLoading() {
+        document.body.innerHTML = `
+  <div id="loadingScreen" class="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-red-500 to-pink-600 text-white opacity-0">
+    <div class="flex flex-col items-center">
+      <div class="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mb-6"></div>
+      <h1 class="text-4xl mb-4">Processing your Yes... ❤️</h1>
+      <p class="opacity-80">Finalizing contract...</p>
+    </div>
+  </div>
+  `;
+
+        gsap.to("#loadingScreen", {
+          opacity: 1,
+          duration: 1,
+          ease: "power2.out",
+        });
+
+        setTimeout(showCelebration, 2500);
+      }
+
+      function showCelebration() {
+        document.body.innerHTML = `
+  <div id="celebration" class="h-screen flex flex-col items-center justify-center text-white text-center bg-gradient-to-br from-red-600 to-pink-700 p-4 opacity-0">
+    <h1 class="text-6xl mb-6">LET'S GOOOOO 💍🔥</h1>
+    <p class="text-2xl mb-4">You are officially my Valentine ❤️</p>
+    <p class="text-xl mb-8">Lifetime subscription activated 😎</p>
+    <img class="w-72 rounded-xl shadow-xl"
+      src="https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif" />
+  </div>
+  `;
+
+        gsap.to("#celebration", {
+          opacity: 1,
+          scale: 1,
+          duration: 1,
+          ease: "back.out(1.7)",
+        });
+
+        confetti({
+          particleCount: 600,
+          spread: 180,
+          origin: { y: 0.6 },
+        });
+      }
+
+      // Screenshot detection
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "r") {
+          alert("If you screenshot you have to set it as status 💍😏");
+        }
+      });
+    </script>
+  </body>
+</html>
